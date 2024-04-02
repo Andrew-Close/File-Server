@@ -303,9 +303,9 @@ files:
   - name: src/server/main/Interpretation.java
     visible: true
     learner_created: true
-feedback_link: https://hyperskill.org/projects/52/stages/283/implement#comment
+feedback_link: https://hyperskill.org/learn/step/5425#comment
 status: Solved
 feedback:
   message: Congratulations!
   time: "Sun, 31 Mar 2024 14:43:14 UTC"
-record: -1
+record: 1

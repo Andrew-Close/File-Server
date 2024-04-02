@@ -1,17 +1,5 @@
 type: edu
 files:
-  - name: src/server/Main.java
-    visible: true
-    text: |-
-      package server;
-      
-      public class Main {
-      
-          public static void main(String[] args) {
-              System.out.println("Hello, world!");
-          }
-      }
-    learner_created: false
   - name: test/FileServerTest.java
     visible: false
     text: |
@@ -82,6 +70,181 @@ files:
           }
       }
     learner_created: false
-feedback_link: https://hyperskill.org/projects/52/stages/284/implement#comment
-status: Unchecked
+  - name: src/server/Interpretation.java
+    visible: true
+    text: |
+      package server.main;
+      
+      import java.util.ArrayList;
+      import java.util.List;
+      
+      /**
+       * Simply a class for holding information about an interpretation.
+       */
+      public class Interpretation {
+          private final int id;
+          private String[] data = new String[1];
+          public Interpretation(int id) {
+              this.id = id;
+          }
+      
+          public Interpretation(int id, String[] data) {
+              this.id = id;
+              this.data = data;
+          }
+      
+          public int getId() {
+              return id;
+          }
+      
+          public String[] getData() {
+              return data;
+          }
+      }
+    learner_created: true
+  - name: src/server/Main.java
+    visible: true
+    text: |-
+      package server.main;
+      
+      import java.util.ArrayList;
+      import java.util.List;
+      import java.util.Scanner;
+      
+      public class Main {
+          private static final List<String> storage = new ArrayList<>();
+          private static final CommandInterpreter interpreter = new CommandInterpreter();
+          private static final Scanner scanner = new Scanner(System.in);
+      
+          public static void main(String[] args) {
+              // The entire runtime of the program
+              inputLoop();
+          }
+      
+          /**
+           * The entire runtime of the program where the user continuously inputs commands until they input exit.
+           */
+          private static void inputLoop() {
+              inputloop:
+              while (true) {
+                  String[] command = scanner.nextLine().split(" ");
+                  // Contains the information about how to act upon the command that the user inputted
+                  Interpretation interpretation = interpreter.interpret(command);
+                  // The id is the operation id. It shows which operation should be executed
+                  switch (interpretation.getId()) {
+                      // Add file
+                      case 1:
+                          // getData()[0] for all of these is the name of the file
+                          // The if statement checks if the operation was successful. That is the same for all of these
+                          if (addFile(interpretation.getData()[0])) {
+                              System.out.printf("The file %s added successfully\n", interpretation.getData()[0]);
+                          } else {
+                              System.out.printf("Cannot add the file %s\n", interpretation.getData()[0]);
+                          }
+                          break;
+                      // Get file
+                      case 2:
+                          if (getFile(interpretation.getData()[0])) {
+                              System.out.printf("The file %s was sent\n", interpretation.getData()[0]);
+                          } else {
+                              System.out.printf("The file %s not found\n", interpretation.getData()[0]);
+                          }
+                          break;
+                      // Delete file
+                      case 3:
+                          if (deleteFile(interpretation.getData()[0])) {
+                              System.out.printf("The file %s was deleted\n", interpretation.getData()[0]);
+                          } else {
+                              System.out.printf("The file %s not found\n", interpretation.getData()[0]);
+                          }
+                          break;
+                      // Exit system
+                      case 0:
+                          break inputloop;
+                      // User input an incorrect operation
+                      case -1:
+                          System.out.println("Invalid command. You must choose the add, get, delete, or exit command.");
+                          break;
+                      // Somehow, the operation id is wrong, probably due to a programming error which I may make in the future
+                      default:
+                          System.out.println("Could not act upon interpretation. Operation id is invalid.");
+                  }
+              }
+          }
+      
+          /**
+           * Adds a file to the storage
+           * @param name the name of the file which should be added
+           * @return whether or not adding the file was successful
+           */
+          private static boolean addFile(String name) {
+              // Checks if the storage already contains the file, the storage is full, or if the file name is incorrect (not "file1" through "file10")
+              if (storage.contains(name) || storage.size() == 10 || !(name.matches("file[0-9]|file10"))) {
+                  return false;
+              } else {
+                  storage.add(name);
+                  return true;
+              }
+          }
+      
+          /**
+           * Gets a file from the storage
+           * @param name the name of the file to be retrieved
+           * @return whether or not the retrieval was successful
+           */
+          private static boolean getFile(String name) {
+              return storage.contains(name);
+          }
+      
+          /**
+           * Deletes a file from the storage
+           * @param name the name of the file to be deleted
+           * @return whether or not the deletion was successful
+           */
+          private static boolean deleteFile(String name) {
+              if (storage.contains(name)) {
+                  storage.remove(name);
+                  return true;
+              } else {
+                  return false;
+              }
+          }
+      }
+    learner_created: true
+  - name: src/server/CommandInterpreter.java
+    visible: true
+    text: |
+      package server.main;
+      
+      /**
+       * Interprets given commands. Returns data and values corresponding to what the program should do with the data
+       */
+      public class CommandInterpreter {
+          /**
+           * The method that actually interprets commands. It returns a String array that represents what operation Main should execute and any data that it might need. For example, if the operation
+           * is "add", then it returns an array with the operation identifier of 1 and the name of the file that the program should add. But if the operation is "exit", then it returns an array with
+           * only the operation identifier of -1, since the program doesn't need any additional data.
+           * @param command the String array of each "word" in the command
+           * @return the String array which tells Main what to do
+           */
+          Interpretation interpret(String[] command) {
+              String operation = command[0];
+              return switch (operation) {
+                  case "add" -> new Interpretation(1, new String[]{command[1]});
+                  case "get" -> new Interpretation(2, new String[]{command[1]});
+                  case "delete" -> new Interpretation(3, new String[]{command[1]});
+                  case "exit" -> new Interpretation(0);
+                  default -> new Interpretation(-1);
+              };
+          }
+      }
+    learner_created: true
+  - name: src/client/Main.java
+    visible: true
+    learner_created: true
+feedback_link: https://hyperskill.org/learn/step/5426#comment
+status: Solved
+feedback:
+  message: Congratulations!
+  time: "Tue, 02 Apr 2024 21:20:51 UTC"
 record: -1
