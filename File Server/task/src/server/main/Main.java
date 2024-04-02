@@ -1,4 +1,4 @@
-package server;
+package server.main;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

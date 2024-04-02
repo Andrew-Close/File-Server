@@ -1,4 +1,4 @@
-package server;
+package server.main;
 
 /**
  * Interprets given commands. Returns data and values corresponding to what the program should do with the data

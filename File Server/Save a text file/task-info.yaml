@@ -1,6 +1,6 @@
 type: edu
 files:
-  - name: src/server/Main.java
+  - name: src/server/main/Main.java
     visible: true
     text: |-
       package server;
@@ -238,6 +238,97 @@ files:
       }
     
     learner_created: false
+  - name: src/server/main/CommandInterpreter.java
+    visible: true
+    text: |
+      package server;
+      
+      /**
+       * Interprets given commands. Returns data and values corresponding to what the program should do with the data
+       */
+      public class CommandInterpreter {
+          /**
+           * The method that actually interprets commands. It returns a String array that represents what operation Main should execute and any data that it might need. For example, if the operation
+           * is "add", then it returns an array with the operation identifier of 1 and the name of the file that the program should add. But if the operation is "exit", then it returns an array with
+           * only the operation identifier of -1, since the program doesn't need any additional data.
+           * @param command the String array of each "word" in the command
+           * @return the String array which tells Main what to do
+           */
+          Interpretation interpret(String[] command) {
+              String operation = command[0];
+              return switch (operation) {
+                  case "add" -> new Interpretation(1, new String[]{command[1]});
+                  case "get" -> new Interpretation(2, new String[]{command[1]});
+                  case "delete" -> new Interpretation(3, new String[]{command[1]});
+                  case "exit" -> new Interpretation(0);
+                  default -> new Interpretation(-1);
+              };
+          }
+      }
+    learner_created: true
+  - name: src/client/main/Main.java
+    visible: true
+    text: |
+      package client;
+      
+      import java.io.DataInputStream;
+      import java.io.DataOutputStream;
+      import java.io.IOException;
+      import java.net.Socket;
+      
+      public class Main {
+          public static void main(String[] args) throws IOException {
+              try (Socket socket = new Socket("127.0.0.1", 23456);
+                   DataInputStream input = new DataInputStream(socket.getInputStream());
+                   DataOutputStream output = new DataOutputStream(socket.getOutputStream()))
+              {
+                  System.out.println("Client started!");
+                  String sentMessage = "Give me everything you have!";
+                  output.writeUTF(sentMessage);
+                  System.out.println("Sent: " + sentMessage);
+                  System.out.println("Received: " + input.readUTF());
+              }
+          }
+      }
+    learner_created: true
+  - name: src/server/main/Interpretation.java
+    visible: true
+    text: |
+      package server;
+      
+      import java.util.ArrayList;
+      import java.util.List;
+      
+      /**
+       * Simply a class for holding information about an interpretation.
+       */
+      public class Interpretation {
+          private final int id;
+          private String[] data = new String[1];
+          public Interpretation(int id) {
+              this.id = id;
+          }
+      
+          public Interpretation(int id, String[] data) {
+              this.id = id;
+              this.data = data;
+          }
+      
+          public int getId() {
+              return id;
+          }
+      
+          public String[] getData() {
+              return data;
+          }
+      }
+    learner_created: true
+  - name: src/config/Config.java
+    visible: true
+    learner_created: true
+  - name: src/client/main/SpecificUserInput.java
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/learn/step/5427#comment
 status: Unchecked
 record: -1
