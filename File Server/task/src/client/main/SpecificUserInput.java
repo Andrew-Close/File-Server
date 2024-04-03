@@ -3,7 +3,7 @@ package client.main;
 import java.util.Scanner;
 
 /**
- * Class for handling user input which is specific to the program
+ * Class for handling user input which is specific to the program.
  */
 public class SpecificUserInput {
     /**
@@ -22,17 +22,26 @@ public class SpecificUserInput {
     private final Scanner scanner = new Scanner(System.in);
 
     /**
-     * Gets a valid action id. Uses the Actions enum to check for validity.
-     * @return the id
+     * Gets a valid action id from the user and returns it as a String. Uses the Actions enum to check for validity.
+     * @return the action as a String to be used in the request to the server
      */
-    int getValidAction() {
+    String getValidAction() {
+        System.out.print("Enter action (1 - get a file, 2 - create a file, 3 - delete a file): ");
         while (true) {
             int id = scanner.nextInt();
             for (Actions action : Actions.values()) {
                 if (action.getId() == id) {
-                    return id;
+                    // Sets System.out on a newline rather than on the same line as the previous message
+                    System.out.println();
+                    return switch (id) {
+                        case 1 -> "GET";
+                        case 2 -> "PUT";
+                        case 3 -> "DELETE";
+                        default -> "NULL";
+                    };
                 }
             }
+            System.out.print("\nInvalid action. Choose from 1 (get file), 2 (create file), or 3 (delete file).");
         }
     }
 }
