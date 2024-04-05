@@ -1,5 +1,6 @@
 package client.main;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 /**
@@ -28,11 +29,17 @@ public class SpecificUserInput {
     String getValidAction() {
         System.out.print("Enter action (1 - get a file, 2 - create a file, 3 - delete a file): ");
         while (true) {
-            int id = scanner.nextInt();
+            int id;
+            try {
+                Scanner scannerTemp = new Scanner(System.in);
+                id = scannerTemp.nextInt();
+            // Catch if the user doesn't input an integer
+            } catch (InputMismatchException e) {
+                System.out.print("Invalid action. Choose from 1 (get file), 2 (create file), or 3 (delete file). ");
+                continue;
+            }
             for (Actions action : Actions.values()) {
                 if (action.getId() == id) {
-                    // Sets System.out on a newline rather than on the same line as the previous message
-                    System.out.println();
                     return switch (id) {
                         case 1 -> "GET";
                         case 2 -> "PUT";
@@ -41,7 +48,7 @@ public class SpecificUserInput {
                     };
                 }
             }
-            System.out.print("\nInvalid action. Choose from 1 (get file), 2 (create file), or 3 (delete file).");
+            System.out.print("Invalid action. Choose from 1 (get file), 2 (create file), or 3 (delete file). ");
         }
     }
 }
