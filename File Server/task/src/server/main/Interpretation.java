@@ -1,8 +1,5 @@
 package server.main;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Simply a class for holding and getting information about an interpretation.
  */

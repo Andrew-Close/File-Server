@@ -1,8 +1,34 @@
 [1;31m
 Start test 1[0m
 Server started!
-Client started!
-$Sent: Give me everything you have!
-(Received: Give me everything you have!
-Sent: All files were sent!
- Received: All files were sent!
+LEnter action (1 - get a file, 2 - create a file, 3 - delete a file): > exit
+The request was sent.
+Server started!
+IEnter action (1 - get a file, 2 - create a file, 3 - delete a file): > 2
+)Enter filename: > test_purpose_V7K9E.txt
+)Enter file content: > UMGIAOFRG2O5O9COON
+The request was sent.
+.The response says that the file was created!
+IEnter action (1 - get a file, 2 - create a file, 3 - delete a file): > 2
+)Enter filename: > test_purpose_V7K9E.txt
+)Enter file content: > UMGIAOFRG2O5O9COON
+The request was sent.
+9The response says that creating the file was forbidden!
+IEnter action (1 - get a file, 2 - create a file, 3 - delete a file): > 1
+)Enter filename: > test_purpose_V7K9E.txt
+The request was sent.
+/The content of the file is: UMGIAOFRG2O5O9COON
+IEnter action (1 - get a file, 2 - create a file, 3 - delete a file): > 1
+,Enter filename: > test_purpose_X1PHWO99.txt
+The request was sent.
+0The response says that the file was not found!
+IEnter action (1 - get a file, 2 - create a file, 3 - delete a file): > 3
+,Enter filename: > test_purpose_UJCQKXUM.txt
+The request was sent.
+0The response says that the file was not found!
+IEnter action (1 - get a file, 2 - create a file, 3 - delete a file): > 3
+)Enter filename: > test_purpose_V7K9E.txt
+The request was sent.
+;The response says that the file was successfully deleted!
+LEnter action (1 - get a file, 2 - create a file, 3 - delete a file): > exit
+The request was sent.

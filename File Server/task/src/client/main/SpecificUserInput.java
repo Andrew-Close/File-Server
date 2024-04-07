@@ -7,8 +7,6 @@ import java.util.Scanner;
  * Class for handling user input which is specific to the program.
  */
 public class SpecificUserInput {
-    private final Scanner scanner = new Scanner(System.in);
-
     /**
      * Gets a valid action id from the user and returns it as a String. Uses the Actions enum to check for validity.
      * @return the action as a String to be used in the request to the server

@@ -3,17 +3,12 @@ package server.main;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
 
 import static config.Config.STORAGE_FOLDER;
 
 public class Main {
-    private static final List<String> storage = new ArrayList<>();
     private static final CommandInterpreter interpreter = new CommandInterpreter();
-    private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) throws IOException {
         // The entire runtime of the server
@@ -79,14 +74,6 @@ public class Main {
         String filepath = String.format(STORAGE_FOLDER, data[0]);
         File file = new File(filepath);
         // Checks if the storage already contains the file, the storage is full, or if the file name is incorrect (not "file1" through "file10")
-        /*
-        if (storage.contains(data) || storage.size() == 10 || !(data.matches("file[0-9]|file10"))) {
-            return false;
-        } else {
-            storage.add(data);
-            return true;
-        }
-         */
         if (file.createNewFile()) {
             try (Writer writer = new FileWriter(file)) {
                 writer.write(String.join(" ", Arrays.copyOfRange(data, 1, data.length)));
