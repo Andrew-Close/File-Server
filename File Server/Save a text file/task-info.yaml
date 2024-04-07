@@ -329,6 +329,12 @@ files:
   - name: src/client/main/SpecificUserInput.java
     visible: true
     learner_created: true
+  - name: src/client/main/Actions.java
+    visible: true
+    learner_created: true
+  - name: src/server/data/file.txt
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/learn/step/5427#comment
 status: Unchecked
 record: -1

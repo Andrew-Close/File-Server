@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-import static config.Config.storageFolder;
+import static config.Config.STORAGE_FOLDER;
 
 public class Main {
     private static final List<String> storage = new ArrayList<>();
@@ -21,7 +21,7 @@ public class Main {
     }
 
     /**
-     * The entire runtime of the program where the user continuously inputs commands until they input exit.
+     * The entire runtime of the server where the user continuously inputs commands until they input exit.
      */
     private static void serverRuntime() throws IOException {
         try (ServerSocket server = new ServerSocket(23456))
@@ -76,7 +76,7 @@ public class Main {
      * @return the status code of the operation
      */
     private static String addFile(String[] data) throws IOException {
-        String filepath = String.format(storageFolder, data[0]);
+        String filepath = String.format(STORAGE_FOLDER, data[0]);
         File file = new File(filepath);
         // Checks if the storage already contains the file, the storage is full, or if the file name is incorrect (not "file1" through "file10")
         /*
@@ -103,7 +103,7 @@ public class Main {
      * @return the status code of the operation + the content read from the file if the code is 200
      */
     private static String getFile(String name) throws IOException {
-        String filepath = String.format(storageFolder, name);
+        String filepath = String.format(STORAGE_FOLDER, name);
         File file = new File(filepath);
         if (file.exists()) {
             try (Reader reader = new FileReader(file)) {
@@ -129,7 +129,7 @@ public class Main {
      * @return the status code of the operation
      */
     private static String deleteFile(String name) {
-        String filepath = String.format(storageFolder, name);
+        String filepath = String.format(STORAGE_FOLDER, name);
         File file = new File(filepath);
         if (file.delete()) {
             return "200";

@@ -1,25 +1,12 @@
 package client.main;
 
-import java.util.InputMismatchException;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 /**
  * Class for handling user input which is specific to the program.
  */
 public class SpecificUserInput {
-    /**
-     * Enum which keeps track of which action ids are correct.
-     */
-    private enum Actions {
-        GET(1), CREATE(2), DELETE(3);
-        private final int id;
-        Actions(int id) {
-            this.id = id;
-        }
-        public int getId() {
-            return id;
-        }
-    }
     private final Scanner scanner = new Scanner(System.in);
 
     /**
@@ -29,23 +16,18 @@ public class SpecificUserInput {
     String getValidAction() {
         System.out.print("Enter action (1 - get a file, 2 - create a file, 3 - delete a file): ");
         while (true) {
-            int id;
+            String id;
             try {
                 Scanner scannerTemp = new Scanner(System.in);
-                id = scannerTemp.nextInt();
+                id = scannerTemp.next();
             // Catch if the user doesn't input an integer
-            } catch (InputMismatchException e) {
+            } catch (NoSuchElementException e) {
                 System.out.print("Invalid action. Choose from 1 (get file), 2 (create file), or 3 (delete file). ");
                 continue;
             }
             for (Actions action : Actions.values()) {
-                if (action.getId() == id) {
-                    return switch (id) {
-                        case 1 -> "GET";
-                        case 2 -> "PUT";
-                        case 3 -> "DELETE";
-                        default -> "NULL";
-                    };
+                if (action.getId().equals(id)) {
+                    return action.toString();
                 }
             }
             System.out.print("Invalid action. Choose from 1 (get file), 2 (create file), or 3 (delete file). ");
