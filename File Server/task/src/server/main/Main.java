@@ -3,12 +3,14 @@ package server.main;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
 
-import static config.Config.STORAGE_FOLDER;
+import static config.Config.CLIENT_STORAGE_FOLDER;
+import static config.Config.SERVER_STORAGE_FOLDER;
 
 public class Main {
     private static final CommandInterpreter interpreter = new CommandInterpreter();
+    // Contains the id to filename pairs. Keeps track of which files on the server belong to which id
+    public static final IDMap idMap = new IDMap();
 
     public static void main(String[] args) throws IOException {
         // The entire runtime of the server
@@ -71,14 +73,20 @@ public class Main {
      * @return the status code of the operation
      */
     private static String addFile(String[] data) throws IOException {
-        String filepath = String.format(STORAGE_FOLDER, data[0]);
-        File file = new File(filepath);
-        // Checks if the storage already contains the file, the storage is full, or if the file name is incorrect (not "file1" through "file10")
-        if (file.createNewFile()) {
-            try (Writer writer = new FileWriter(file)) {
-                writer.write(String.join(" ", Arrays.copyOfRange(data, 1, data.length)));
+        String clientFilePath = String.format(CLIENT_STORAGE_FOLDER, data[0]);
+        String serverFilePath = String.format(SERVER_STORAGE_FOLDER, data[1]);
+        File clientFile = new File(clientFilePath);
+        File serverFile = new File(serverFilePath);
+        if (serverFile.createNewFile()) {
+            // Reads from the file, stores the data in a buffer, then writes to the server file location using the data from the buffer. Input stream -> Buffer -> Output stream
+            try (InputStream input = new FileInputStream(clientFile);
+                 BufferedInputStream buffer = new BufferedInputStream(input);
+                 OutputStream output = new FileOutputStream(serverFile)) {
+                output.write(buffer.readAllBytes());
             }
-            return "200";
+            // Gives a new id to the server filename and returns it in the status code
+            idMap.addPair(data[1]);
+            return "200 " + idMap.getIDByName(data[1]);
         } else {
             return "403";
         }
@@ -90,7 +98,7 @@ public class Main {
      * @return the status code of the operation + the content read from the file if the code is 200
      */
     private static String getFile(String name) throws IOException {
-        String filepath = String.format(STORAGE_FOLDER, name);
+        String filepath = String.format(SERVER_STORAGE_FOLDER, name);
         File file = new File(filepath);
         if (file.exists()) {
             try (Reader reader = new FileReader(file)) {
@@ -116,7 +124,7 @@ public class Main {
      * @return the status code of the operation
      */
     private static String deleteFile(String name) {
-        String filepath = String.format(STORAGE_FOLDER, name);
+        String filepath = String.format(SERVER_STORAGE_FOLDER, name);
         File file = new File(filepath);
         if (file.delete()) {
             return "200";

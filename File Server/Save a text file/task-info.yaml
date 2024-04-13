@@ -332,12 +332,9 @@ files:
   - name: src/client/main/Actions.java
     visible: true
     learner_created: true
-  - name: src/server/data/file.txt
-    visible: true
-    learner_created: true
 feedback_link: https://hyperskill.org/learn/step/5427#comment
 status: Solved
 feedback:
   message: Congratulations!
   time: "Sun, 07 Apr 2024 20:56:14 UTC"
-record: -1
+record: 3
