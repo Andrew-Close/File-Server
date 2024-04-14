@@ -16,9 +16,9 @@ public class CommandInterpreter {
     Interpretation interpret(String[] command) {
         String operation = command[0];
         return switch (operation) {
-            case "GET" -> new Interpretation(1, new String[]{command[1]});
+            case "GET_BY_NAME", "GET_BY_ID" -> new Interpretation(1, new String[]{command[1]});
             case "PUT" -> new Interpretation(2, Arrays.copyOfRange(command, 1, command.length));
-            case "DELETE" -> new Interpretation(3, new String[]{command[1]});
+            case "DELETE_BY_NAME", "DELETE_BY_ID" -> new Interpretation(3, new String[]{command[1]});
             case "EXIT" -> new Interpretation(0);
             default -> new Interpretation(-1);
         };

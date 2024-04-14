@@ -21,5 +21,10 @@ public class Config {
     /**
      * This constant needs to be used with formatting because of the %s at the end.
      */
+    //
+    //
+    // Use this when testing: src\client\data\%s
+    //
+    //
     public static final String CLIENT_STORAGE_FOLDER = "File Server\\task\\src\\client\\data\\%s";
 }

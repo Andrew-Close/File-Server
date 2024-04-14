@@ -1,14 +1,13 @@
 package client.main;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.Array;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Scanner;
 // import java.util.concurrent.TimeUnit;
+import static config.Config.*;
 
-import static config.Config.ADDRESS;
-import static config.Config.PORT;
 
 public class Main {
     private static final Scanner SCANNER = new Scanner(System.in);
@@ -59,20 +58,43 @@ public class Main {
      * @throws IOException thrown if the input or output mess up somehow
      */
     private static void sendGetRequest(DataInputStream input, DataOutputStream output, int retrievalMode) throws IOException {
-        System.out.print("Enter filename: ");
-        String filename = SCANNER.nextLine();
-        // The GET request
-        output.writeUTF(Actions.GET + " " + filename);
+        switch (retrievalMode) {
+            case 1:
+                System.out.print("Enter filename: ");
+                String filename = SCANNER.nextLine();
+                // The GET request
+                output.writeUTF(Actions.GET + "_BY_NAME" + " " + filename);
+                break;
+            case 2:
+                System.out.print("Enter id: ");
+                int id = SCANNER.nextInt();
+                // The GET request
+                output.writeUTF(Actions.GET + "BY_ID" + " " + id);
+                break;
+        }
         System.out.println("The request was sent.");
-        // Checking the status code and printing the respective message
-        String statusCode = input.readUTF();
+        // Getting the status code and printing the respective messages
+        byte[] statusCode = input.readAllBytes();
+        System.out.println(Arrays.toString(statusCode));
+        /*
         // Success
         if ("200".equals(statusCode.substring(0, 3))) {
-            System.out.printf("The content of the file is: %s\n", statusCode.substring(4));
+            System.out.print("The file was downloaded! Specify a name for it: ");
+            String filename = SCANNER.nextLine();
+            File file = new File(String.format(CLIENT_STORAGE_FOLDER, filename));
+            try (OutputStream fileOutput = new FileOutputStream(file)) {
+                String[] stringContent = statusCode.substring(5, statusCode.length() - 1).split(", ");
+                byte[] content = new byte[stringContent.length];
+                for (int i = 0; i < stringContent.length; i++) {
+                    content[i] = Byte.parseByte(stringContent[i]);
+                }
+                fileOutput.write(content);
+            }
         // Failure
         } else if ("404".equals(statusCode)) {
             System.out.println("The response says that the file was not found!");
         }
+         */
     }
 
     /**
@@ -88,9 +110,8 @@ public class Main {
         String format = filenameLocal.substring(filenameLocal.lastIndexOf("."));
         // Name that the file should be called on the server
         String filenameServer = USER_INPUT.getNewServerFileName();
-        if (filenameServer.matches("no_name_id_[0-9]+")) filenameServer = filenameServer + format;
         // The PUT request
-        output.writeUTF(Actions.PUT + " " + filenameLocal + " " + filenameServer);
+        output.writeUTF(Actions.PUT + " " + filenameLocal + " " + filenameServer + " " + format);
         System.out.println("The request was sent.");
         // Checking the status code and printing the respective message
         String statusCode = input.readUTF();

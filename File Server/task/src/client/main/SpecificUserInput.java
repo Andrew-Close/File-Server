@@ -1,14 +1,10 @@
 package client.main;
 
-import server.main.IDMap;
-import server.main.Main;
-
 import java.io.File;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import static config.Config.CLIENT_STORAGE_FOLDER;
-import static server.main.Main.idMap;
 
 /**
  * Class for handling user input which is specific to the program.
@@ -82,18 +78,12 @@ public class SpecificUserInput {
     }
 
     /**
-     * Gets a valid filename from the user to be used as the name of a file to be put on the server. The format must be specified in the user input.
+     * Gets a filename from the user for the file to be called on the server. It does the exact same thing as scanner.nextLine(), but I decided to keep this method to retain abstraction.
      * @return the filename
      */
     String getNewServerFileName() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter name of the file to be saved on the server: ");
-        String filename = scanner.nextLine();
-        // If the user did not input a name, a name is automatically generated
-        if (filename.isEmpty()) {
-            return "no_name_id_" + idMap.getLeastAvailableID();
-        } else {
-            return filename;
-        }
+        return scanner.nextLine();
     }
 }
