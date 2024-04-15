@@ -1,5 +1,6 @@
 package client.main;
 
+import javax.swing.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.net.Socket;
@@ -12,7 +13,7 @@ import static config.Config.*;
 public class Main {
     private static final Scanner SCANNER = new Scanner(System.in);
     private static final SpecificUserInput USER_INPUT = new SpecificUserInput();
-    public static void main(String[] args) throws IOException/*, InterruptedException*/ {
+    public static void main(String[] args) throws IOException, InterruptedException/*, InterruptedException*/ {
         //
         //
         // Use this when running tests. Also uncomment TimeUnit import and the InterruptedException in the throws list
@@ -57,7 +58,7 @@ public class Main {
      * @param retrievalMode specifies whether to get by id or by name. name is 1, id is 2
      * @throws IOException thrown if the input or output mess up somehow
      */
-    private static void sendGetRequest(DataInputStream input, DataOutputStream output, int retrievalMode) throws IOException {
+    private static void sendGetRequest(DataInputStream input, DataOutputStream output, int retrievalMode) throws IOException, InterruptedException {
         switch (retrievalMode) {
             case 1:
                 System.out.print("Enter filename: ");
@@ -73,28 +74,22 @@ public class Main {
                 break;
         }
         System.out.println("The request was sent.");
-        // Getting the status code and printing the respective messages
-        byte[] statusCode = input.readAllBytes();
-        System.out.println(Arrays.toString(statusCode));
-        /*
+        // Getting the content of the file and status code
+        int length = input.readInt();
+        byte[] content = input.readNBytes(length);
+        String statusCode = input.readUTF();
         // Success
-        if ("200".equals(statusCode.substring(0, 3))) {
+        if ("200".equals(statusCode)) {
             System.out.print("The file was downloaded! Specify a name for it: ");
             String filename = SCANNER.nextLine();
-            File file = new File(String.format(CLIENT_STORAGE_FOLDER, filename));
-            try (OutputStream fileOutput = new FileOutputStream(file)) {
-                String[] stringContent = statusCode.substring(5, statusCode.length() - 1).split(", ");
-                byte[] content = new byte[stringContent.length];
-                for (int i = 0; i < stringContent.length; i++) {
-                    content[i] = Byte.parseByte(stringContent[i]);
-                }
+            File clientFile = new File(String.format(CLIENT_STORAGE_FOLDER, filename));
+            try (OutputStream fileOutput = new FileOutputStream(clientFile)) {
                 fileOutput.write(content);
             }
         // Failure
         } else if ("404".equals(statusCode)) {
             System.out.println("The response says that the file was not found!");
         }
-         */
     }
 
     /**
@@ -103,7 +98,7 @@ public class Main {
      * @param output the output stream to which the PUT request is sent
      * @throws IOException thrown if the input or output mess up somehow
      */
-    private static void sendPutRequest(DataInputStream input, DataOutputStream output) throws IOException {
+    private static void sendPutRequest(DataInputStream input, DataOutputStream output) throws IOException, InterruptedException {
         // Locally existing file that the user wants to save on the server
         String filenameLocal = USER_INPUT.getExistingLocalFile();
         // The format of the file, including the  period

@@ -1,5 +1,6 @@
 package server.main;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -14,7 +15,7 @@ public class Main {
     // Contains the id to filename pairs. Keeps track of which files on the server belong to which id
     private static IDMap idMap;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         // The entire runtime of the server
         serverRuntime();
     }
@@ -22,12 +23,13 @@ public class Main {
     /**
      * The entire runtime of the server where the user continuously inputs commands until they input exit.
      */
-    private static void serverRuntime() throws IOException {
+    private static void serverRuntime() throws IOException, InterruptedException {
         try (ServerSocket server = new ServerSocket(23456))
         {
             System.out.println("Server started!");
             serverloop:
             while (true) {
+                //Thread.sleep(2000L);
                 if (idMap == null) {
                     idMap = new IDMap();
                 }
@@ -43,7 +45,7 @@ public class Main {
                     switch (interpretation.getId()) {
                         // Get file
                         case 1:
-                            statusCode = getFile(interpretation.getData()[0]);
+                            statusCode = getFile(interpretation.getData()[0], output);
                             break;
                         // Add file
                         case 2:
@@ -65,7 +67,7 @@ public class Main {
                             output.writeUTF("Could not act upon interpretation. Operation id is invalid.");
                     }
                     if (statusCode != null) {
-                        output.writeBytes(statusCode);
+                        output.writeUTF(statusCode);
                     }
                 }
             }
@@ -104,9 +106,9 @@ public class Main {
      * @param identifier the name of the file to be retrieved
      * @return the status code of the operation + the content read from the file if the code is 200
      */
-    private static String getFile(String identifier) throws IOException {
+    private static String getFile(String identifier, DataOutputStream clientOutput) throws IOException {
         String serverFilePath;
-        // If the identifier is an integer
+        // If the identifier is an integer id
         if (identifier.matches("[0-9]+")) {
             String filename = idMap.getByID(Integer.parseInt(identifier));
             serverFilePath = String.format(SERVER_STORAGE_FOLDER, filename);
@@ -117,15 +119,10 @@ public class Main {
         if (serverFile.exists()) {
             try (InputStream input = new FileInputStream(serverFile);
                 InputStream buffer = new BufferedInputStream(input)) {
-                Scanner scanner = new Scanner(System.in);
-                System.out.print("The file was downloaded! Specify a name for it: ");
-                String clientFilePath = String.format(CLIENT_STORAGE_FOLDER, scanner.nextLine());
-                File clientFile = new File(clientFilePath);
-                try (OutputStream output = new FileOutputStream(clientFile)) {
-                    output.write(buffer.readAllBytes());
-                    return "200";
-                }
+                clientOutput.writeInt(buffer.available());
+                clientOutput.write(buffer.readAllBytes());
             }
+            return "200";
         } else {
             return "404";
         }
