@@ -70,7 +70,7 @@ public class Main {
                 System.out.print("Enter id: ");
                 int id = SCANNER.nextInt();
                 // The GET request
-                output.writeUTF(Actions.GET + "BY_ID" + " " + id);
+                output.writeUTF(Actions.GET + "_BY_ID" + " " + id);
                 break;
         }
         System.out.println("The request was sent.");
@@ -81,6 +81,8 @@ public class Main {
         // Success
         if ("200".equals(statusCode)) {
             System.out.print("The file was downloaded! Specify a name for it: ");
+            // This repositions the scanner to the beginning of the user input or something. Basically, without this line of code, the program skips the user input for the filename
+            SCANNER.nextLine();
             String filename = SCANNER.nextLine();
             File clientFile = new File(String.format(CLIENT_STORAGE_FOLDER, filename));
             try (OutputStream fileOutput = new FileOutputStream(clientFile)) {
@@ -127,19 +129,29 @@ public class Main {
      * @throws IOException thrown if the input or output mess up somehow
      */
     private static void sendDeleteRequest(DataInputStream input, DataOutputStream output, int retrievalMode) throws IOException {
-        System.out.print("Enter filename: ");
-        String filename = SCANNER.nextLine();
-        // The DELETE request
-        output.writeUTF(Actions.DELETE + " " + filename);
+        switch (retrievalMode) {
+            case 1:
+                System.out.print("Enter filename: ");
+                String filename = SCANNER.nextLine();
+                // The GET request
+                output.writeUTF(Actions.DELETE + "_BY_NAME" + " " + filename);
+                break;
+            case 2:
+                System.out.print("Enter id: ");
+                int id = SCANNER.nextInt();
+                // The GET request
+                output.writeUTF(Actions.DELETE + "_BY_ID" + " " + id);
+                break;
+        }
         System.out.println("The request was sent.");
         // Checking the status code and printing the respective message
         String statusCode = input.readUTF();
         // Success
         if ("200".equals(statusCode)) {
-            System.out.println("The response says that the file was successfully deleted!");
+            System.out.println("The response says that this file was deleted successfully!");
         // Failure
         } else if ("404".equals(statusCode)) {
-            System.out.println("The response says that the file was not found!");
+            System.out.println("The response says that this file is not found!");
         }
     }
 

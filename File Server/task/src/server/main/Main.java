@@ -94,7 +94,7 @@ public class Main {
                 output.write(buffer.readAllBytes());
             }
             // Gives a new id to the server filename and returns it in the status code
-            idMap.addPair(data[1]);
+            idMap.addPair(serverFileName);
             return "200 " + idMap.getIDByName(data[1]);
         } else {
             return "403";
@@ -130,13 +130,30 @@ public class Main {
 
     /**
      * Deletes a file from the storage
-     * @param name the name of the file to be deleted
+     * @param name the name of the file to be deleted or the id of the file
      * @return the status code of the operation
      */
     private static String deleteFile(String name) {
-        String filepath = String.format(SERVER_STORAGE_FOLDER, name);
+        String filepath;
+        // Used for the filepath but also for the deletion of the pair in the idmap
+        String filename;
+        // ID is set to -1 because, if it doesn't change, then the pair in the idmap is deleted by name, and if it does change, it's deleted by id
+        int id = -1;
+        if (name.matches("[0-9]+")) {
+            filename = idMap.getByID(Integer.parseInt(name));
+            id = Integer.parseInt(name);
+            filepath = String.format(SERVER_STORAGE_FOLDER, filename);
+        } else {
+            filename = name;
+            filepath = String.format(SERVER_STORAGE_FOLDER, name);
+        }
         File file = new File(filepath);
         if (file.delete()) {
+            if (id == -1) {
+                idMap.deleteByName(filename);
+            } else {
+                idMap.deleteByID(id);
+            }
             return "200";
         } else {
             return "404";
