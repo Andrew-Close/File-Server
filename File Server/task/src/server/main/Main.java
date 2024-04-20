@@ -101,7 +101,7 @@ public class Main {
         }
     }
 
-    /**
+   /**
      * Gets a file from the storage
      * @param identifier the name of the file to be retrieved
      * @return the status code of the operation + the content read from the file if the code is 200

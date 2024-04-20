@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import static config.Config.CLIENT_STORAGE_FOLDER;
+import static config.Config.SERVER_STORAGE_FOLDER;
 
 /**
  * Class for handling user input which is specific to the program.
@@ -71,6 +72,23 @@ public class SpecificUserInput {
             String filename = scanner.next();
             // Checks if the file is in the client/data folder
             if (new File(String.format(CLIENT_STORAGE_FOLDER, filename)).exists()) {
+                return filename;
+            }
+            System.out.print("That file does not exist. Make sure the file is in the client/data folder and type it again. ");
+        }
+    }
+
+    /**
+     * Gets a valid server-side filename from the user. The file must be in the server/data folder. Also, the format must be specified in the user input.
+     * @return the filename
+     */
+    String getExistingServerFile() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter filename: ");
+        while (true) {
+            String filename = scanner.next();
+            // Checks if the file is in the server/data folder
+            if (new File(String.format(SERVER_STORAGE_FOLDER, filename)).exists()) {
                 return filename;
             }
             System.out.print("That file does not exist. Make sure the file is in the client/data folder and type it again. ");

@@ -68,6 +68,7 @@ public class IDMap {
         for (Map.Entry<Integer, String> entry : idMap.entrySet()) {
             if (entry.getValue().equals(filename)) {
                 idMap.remove(entry.getKey());
+                break;
             }
         }
     }

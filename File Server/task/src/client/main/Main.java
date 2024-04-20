@@ -62,13 +62,14 @@ public class Main {
         switch (retrievalMode) {
             case 1:
                 System.out.print("Enter filename: ");
-                String filename = SCANNER.nextLine();
+                String filename = USER_INPUT.getExistingServerFile();
                 // The GET request
                 output.writeUTF(Actions.GET + "_BY_NAME" + " " + filename);
                 break;
             case 2:
                 System.out.print("Enter id: ");
-                int id = SCANNER.nextInt();
+                // I can't just use an integer because, for some reason, when I use nextInt, it just skips the user input for the filename later on
+                String id = SCANNER.nextLine();
                 // The GET request
                 output.writeUTF(Actions.GET + "_BY_ID" + " " + id);
                 break;
@@ -80,9 +81,9 @@ public class Main {
         String statusCode = input.readUTF();
         // Success
         if ("200".equals(statusCode)) {
+            // This repositions the scanner to the beginning of the user input or something. Basically, without this line of code, the program sometimes skips the user input for the filename
+            // SCANNER.nextLine();
             System.out.print("The file was downloaded! Specify a name for it: ");
-            // This repositions the scanner to the beginning of the user input or something. Basically, without this line of code, the program skips the user input for the filename
-            SCANNER.nextLine();
             String filename = SCANNER.nextLine();
             File clientFile = new File(String.format(CLIENT_STORAGE_FOLDER, filename));
             try (OutputStream fileOutput = new FileOutputStream(clientFile)) {
@@ -132,13 +133,13 @@ public class Main {
         switch (retrievalMode) {
             case 1:
                 System.out.print("Enter filename: ");
-                String filename = SCANNER.nextLine();
+                String filename = USER_INPUT.getExistingServerFile();
                 // The GET request
                 output.writeUTF(Actions.DELETE + "_BY_NAME" + " " + filename);
                 break;
             case 2:
                 System.out.print("Enter id: ");
-                int id = SCANNER.nextInt();
+                String id = SCANNER.nextLine();
                 // The GET request
                 output.writeUTF(Actions.DELETE + "_BY_ID" + " " + id);
                 break;
