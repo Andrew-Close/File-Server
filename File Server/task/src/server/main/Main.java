@@ -13,7 +13,7 @@ import static config.Config.SERVER_STORAGE_FOLDER;
 public class Main {
     private static final CommandInterpreter interpreter = new CommandInterpreter();
     // Contains the id to filename pairs. Keeps track of which files on the server belong to which id
-    private static IDMap idMap;
+    private static final IDMap idMap = new IDMap();
 
     public static void main(String[] args) throws IOException, InterruptedException {
         // The entire runtime of the server
@@ -30,9 +30,6 @@ public class Main {
             serverloop:
             while (true) {
                 //Thread.sleep(2000L);
-                if (idMap == null) {
-                    idMap = new IDMap();
-                }
                 try (Socket socket = server.accept();
                      DataInputStream input = new DataInputStream(socket.getInputStream());
                      DataOutputStream output = new DataOutputStream(socket.getOutputStream()))
@@ -95,7 +92,7 @@ public class Main {
             }
             // Gives a new id to the server filename and returns it in the status code
             idMap.addPair(serverFileName);
-            return "200 " + idMap.getIDByName(data[1]);
+            return "200 " + idMap.getIDByName(serverFileName);
         } else {
             return "403";
         }
@@ -167,5 +164,30 @@ public class Main {
      */
     private static String generateFileName(String format) {
         return "no_name_id_" + idMap.getLeastAvailableID() + format;
+    }
+
+    /**
+     * Checks if the idmap contains a pair which uses the passed id.
+     * @param id the id to check.
+     * @return whether or not the id is in use.
+     */
+    public static boolean mapHasID(String id) {
+        //
+        //
+        //
+        // Remove this debugging when done!!!!!!
+        //
+        //
+        //
+        // System.out.println("Before accessing map in server");
+        // printMap();
+        boolean hasMap = idMap.getByID(Integer.parseInt(id)) != null;
+        // System.out.println("After accessing map in server");
+        // printMap();
+        return hasMap;
+    }
+
+    public static void printMap() {
+        idMap.printMap();
     }
 }

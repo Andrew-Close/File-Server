@@ -1,11 +1,15 @@
 package client.main;
 
+import server.main.Main;
+
 import java.io.File;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import static config.Config.CLIENT_STORAGE_FOLDER;
 import static config.Config.SERVER_STORAGE_FOLDER;
+import static server.main.Main.mapHasID;
+import static server.main.Main.printMap;
 
 /**
  * Class for handling user input which is specific to the program.
@@ -62,46 +66,64 @@ public class SpecificUserInput {
     }
 
     /**
-     * Gets a valid local filename from the user. The file must be in the client/data folder. Also, the format must be specified in the user input.
-     * @return the filename
+     * Gets a filename from the user which exists. Can check if it exists in the client folder or the server folder. The file must be in the client/data folder
+     * if checking the client folder or the server/data folder if checking the server folder. Also, the format must be specified in the user input.
+     * @param getFromServer if true, checks the server folder. If false, checks the client folder.
+     * @return the filename.
      */
-    String getExistingLocalFile() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter name of the file: ");
-        while (true) {
-            String filename = scanner.next();
-            // Checks if the file is in the client/data folder
-            if (new File(String.format(CLIENT_STORAGE_FOLDER, filename)).exists()) {
-                return filename;
-            }
-            System.out.print("That file does not exist. Make sure the file is in the client/data folder and type it again. ");
-        }
-    }
-
-    /**
-     * Gets a valid server-side filename from the user. The file must be in the server/data folder. Also, the format must be specified in the user input.
-     * @return the filename
-     */
-    String getExistingServerFile() {
+    String getExistingFile(boolean getFromServer) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter filename: ");
         while (true) {
-            String filename = scanner.next();
+            String filename = scanner.nextLine();
             // Checks if the file is in the server/data folder
-            if (new File(String.format(SERVER_STORAGE_FOLDER, filename)).exists()) {
-                return filename;
+            if (getFromServer) {
+                if (new File(String.format(SERVER_STORAGE_FOLDER, filename)).exists() && !filename.isEmpty()) {
+                    return filename;
+                } else {
+                    System.out.print("That file does not exist. Make sure the file is in the server/data folder and type it again. ");
+                }
+            // Checks if the file is in the client/data folder
+            } else {
+                if (new File(String.format(CLIENT_STORAGE_FOLDER, filename)).exists() && !filename.isEmpty()) {
+                    return filename;
+                } else {
+                    System.out.print("That file does not exist. Make sure the file is in the client/data folder and type it again. ");
+                }
             }
-            System.out.print("That file does not exist. Make sure the file is in the client/data folder and type it again. ");
         }
     }
 
     /**
-     * Gets a filename from the user for the file to be called on the server. It does the exact same thing as scanner.nextLine(), but I decided to keep this method to retain abstraction.
-     * @return the filename
+     * Gets a valid file id from the user. Used with selecting server-side files by id.
+     * @return the id
      */
-    String getNewServerFileName() {
+    String getExistingID() {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter name of the file to be saved on the server: ");
-        return scanner.nextLine();
+        System.out.print("Enter id: ");
+        while (true) {
+            String id = scanner.nextLine();
+            // Checks if the id is an integer
+            if (id.matches("[0-9]+")) {
+                // Server-side method
+                //
+                //
+                //
+                // Remove this debugging when done!
+                //
+                //
+                //
+                // System.out.println("Before accessing map in user input");
+                // printMap();
+                if (mapHasID(id)) {
+                    // System.out.println("After accessing map in user input");
+                    // printMap();
+                    return id;
+                }
+                System.out.print("That ID is not in use. Make sure to input an id which is currently matched with a file. ");
+            } else {
+                System.out.print("That is not an integer. Please enter an integer id to check. ");
+            }
+        }
     }
 }

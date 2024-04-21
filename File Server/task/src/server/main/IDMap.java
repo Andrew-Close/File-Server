@@ -110,4 +110,8 @@ public class IDMap {
             return -1;
         }
     }
+
+    void printMap() {
+        System.out.println(idMap);
+    }
 }
