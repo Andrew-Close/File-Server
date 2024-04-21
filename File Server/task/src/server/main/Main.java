@@ -13,7 +13,7 @@ import static config.Config.SERVER_STORAGE_FOLDER;
 public class Main {
     private static final CommandInterpreter interpreter = new CommandInterpreter();
     // Contains the id to filename pairs. Keeps track of which files on the server belong to which id
-    private static final IDMap idMap = new IDMap();
+    private static IDMap idMap = new IDMap();
 
     public static void main(String[] args) throws IOException, InterruptedException {
         // The entire runtime of the server
@@ -103,7 +103,7 @@ public class Main {
      * @param identifier the name of the file to be retrieved
      * @return the status code of the operation + the content read from the file if the code is 200
      */
-    private static String getFile(String identifier, DataOutputStream clientOutput) throws IOException {
+   private static String getFile(String identifier, DataOutputStream clientOutput) throws IOException {
         String serverFilePath;
         // If the identifier is an integer id
         if (identifier.matches("[0-9]+")) {
@@ -164,30 +164,5 @@ public class Main {
      */
     private static String generateFileName(String format) {
         return "no_name_id_" + idMap.getLeastAvailableID() + format;
-    }
-
-    /**
-     * Checks if the idmap contains a pair which uses the passed id.
-     * @param id the id to check.
-     * @return whether or not the id is in use.
-     */
-    public static boolean mapHasID(String id) {
-        //
-        //
-        //
-        // Remove this debugging when done!!!!!!
-        //
-        //
-        //
-        // System.out.println("Before accessing map in server");
-        // printMap();
-        boolean hasMap = idMap.getByID(Integer.parseInt(id)) != null;
-        // System.out.println("After accessing map in server");
-        // printMap();
-        return hasMap;
-    }
-
-    public static void printMap() {
-        idMap.printMap();
     }
 }

@@ -1,15 +1,7 @@
 package client.main;
 
-import server.main.Main;
-
-import java.io.File;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
-
-import static config.Config.CLIENT_STORAGE_FOLDER;
-import static config.Config.SERVER_STORAGE_FOLDER;
-import static server.main.Main.mapHasID;
-import static server.main.Main.printMap;
 
 /**
  * Class for handling user input which is specific to the program.
@@ -66,64 +58,22 @@ public class SpecificUserInput {
     }
 
     /**
-     * Gets a filename from the user which exists. Can check if it exists in the client folder or the server folder. The file must be in the client/data folder
-     * if checking the client folder or the server/data folder if checking the server folder. Also, the format must be specified in the user input.
-     * @param getFromServer if true, checks the server folder. If false, checks the client folder.
+     * Gets a filename from the user. Doesn't actually check if the file exists, just returns what the user inputs.
      * @return the filename.
      */
-    String getExistingFile(boolean getFromServer) {
+    String getFile(boolean getFromServer) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter filename: ");
-        while (true) {
-            String filename = scanner.nextLine();
-            // Checks if the file is in the server/data folder
-            if (getFromServer) {
-                if (new File(String.format(SERVER_STORAGE_FOLDER, filename)).exists() && !filename.isEmpty()) {
-                    return filename;
-                } else {
-                    System.out.print("That file does not exist. Make sure the file is in the server/data folder and type it again. ");
-                }
-            // Checks if the file is in the client/data folder
-            } else {
-                if (new File(String.format(CLIENT_STORAGE_FOLDER, filename)).exists() && !filename.isEmpty()) {
-                    return filename;
-                } else {
-                    System.out.print("That file does not exist. Make sure the file is in the client/data folder and type it again. ");
-                }
-            }
-        }
+        return scanner.nextLine();
     }
 
     /**
-     * Gets a valid file id from the user. Used with selecting server-side files by id.
+     * Gets a file id from the user. Doesn't actually check if it is a valid id, just returns what the user inputs.
      * @return the id
      */
-    String getExistingID() {
+    String getID() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter id: ");
-        while (true) {
-            String id = scanner.nextLine();
-            // Checks if the id is an integer
-            if (id.matches("[0-9]+")) {
-                // Server-side method
-                //
-                //
-                //
-                // Remove this debugging when done!
-                //
-                //
-                //
-                // System.out.println("Before accessing map in user input");
-                // printMap();
-                if (mapHasID(id)) {
-                    // System.out.println("After accessing map in user input");
-                    // printMap();
-                    return id;
-                }
-                System.out.print("That ID is not in use. Make sure to input an id which is currently matched with a file. ");
-            } else {
-                System.out.print("That is not an integer. Please enter an integer id to check. ");
-            }
-        }
+        return scanner.nextLine();
     }
 }

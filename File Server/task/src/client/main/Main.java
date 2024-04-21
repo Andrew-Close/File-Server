@@ -5,7 +5,6 @@ import java.net.Socket;
 import java.util.Scanner;
 // import java.util.concurrent.TimeUnit;
 import static config.Config.*;
-import static server.main.Main.printMap;
 
 
 public class Main {
@@ -26,15 +25,6 @@ public class Main {
              DataInputStream input = new DataInputStream(socket.getInputStream());
              DataOutputStream output = new DataOutputStream(socket.getOutputStream()))
         {
-            //
-            //
-            //
-            // DEBUGGING
-            //
-            //
-            //
-            // System.out.println("Map at beginning of connection");
-            // printMap();
             // User input
             String action = USER_INPUT.getValidAction();
             // Specifies whether to get or delete the file by id or by name
@@ -68,22 +58,13 @@ public class Main {
     private static void sendGetRequest(DataInputStream input, DataOutputStream output, int retrievalMode) throws IOException, InterruptedException {
         switch (retrievalMode) {
             case 1:
-                String filename = USER_INPUT.getExistingFile(true);
+                String filename = USER_INPUT.getFile(true);
                 // The GET request
                 output.writeUTF(Actions.GET + "_BY_NAME" + " " + filename);
                 break;
             case 2:
-                //
-                //
-                //
-                // DEBUGGING
-                //
-                //
-                //
-                // System.out.println("Before accessing map in client");
-                // printMap();
                 // I can't just use an integer because, for some reason, when I use nextInt, it just skips the user input for the filename later on
-                String id = USER_INPUT.getExistingID();
+                String id = USER_INPUT.getID();
                 // The GET request
                 output.writeUTF(Actions.GET + "_BY_ID" + " " + id);
                 break;
@@ -117,7 +98,7 @@ public class Main {
      */
     private static void sendPutRequest(DataInputStream input, DataOutputStream output) throws IOException, InterruptedException {
         // Locally existing file that the user wants to save on the server
-        String filenameLocal = USER_INPUT.getExistingFile(false);
+        String filenameLocal = USER_INPUT.getFile(false);
         // The format of the file, including the  period
         String format = filenameLocal.substring(filenameLocal.lastIndexOf("."));
         // Name that the file should be called on the server
@@ -148,12 +129,12 @@ public class Main {
     private static void sendDeleteRequest(DataInputStream input, DataOutputStream output, int retrievalMode) throws IOException {
         switch (retrievalMode) {
             case 1:
-                String filename = USER_INPUT.getExistingFile(true);
+                String filename = USER_INPUT.getFile(true);
                 // The GET request
                 output.writeUTF(Actions.DELETE + "_BY_NAME" + " " + filename);
                 break;
             case 2:
-                String id = USER_INPUT.getExistingID();
+                String id = USER_INPUT.getID();
                 // The GET request
                 output.writeUTF(Actions.DELETE + "_BY_ID" + " " + id);
                 break;
