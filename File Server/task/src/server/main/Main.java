@@ -1,5 +1,6 @@
 package server.main;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -14,7 +15,7 @@ public class Main {
     private static final CommandInterpreter interpreter = new CommandInterpreter();
     // Contains the id to filename pairs. Keeps track of which files on the server belong to which id
     private static final IDMap idMap = new IDMap();
-    private static final ExecutorService requestThreadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private static final ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     public static void main(String[] args) throws IOException, InterruptedException {
         // The entire runtime of the server
@@ -31,43 +32,60 @@ public class Main {
             serverloop:
             while (true) {
                 //Thread.sleep(2000L);
-                try (Socket socket = server.accept();
-                     DataInputStream input = new DataInputStream(socket.getInputStream());
-                     DataOutputStream output = new DataOutputStream(socket.getOutputStream()))
-                {
-                    String[] command = input.readUTF().split(" ");
-                    // Contains the information about how to act upon the command that the user inputted
-                    Interpretation interpretation = interpreter.interpret(command);
-                    // The id is the operation id. It shows which operation should be executed
-                    switch (interpretation.getId()) {
-                        // Get file
-                        case 1:
-                            requestThreadPool.submit(new getFile(interpretation.getData()[0], output));
-                            // getFile(interpretation.getData()[0], output);
-                            break;
-                        // Add file
-                        case 2:
-                            requestThreadPool.submit(new addFile(interpretation.getData(), output));
-                            // statusCode = addFile(interpretation.getData());
-                            break;
-                        // Delete file
-                        case 3:
-                            requestThreadPool.submit(new deleteFile(interpretation.getData()[0], output));
-                            // statusCode = deleteFile(interpretation.getData()[0]);
-                            break;
-                        // Exit system
-                        case 0:
-                            break serverloop;
-                        // User input an incorrect operation
-                        case -1:
-                            output.writeUTF("Invalid command. You must choose the add, get, delete, or exit command.");
-                            break;
-                        // Somehow, the operation id is wrong, probably due to a programming error which I may make in the future
-                        default:
-                            output.writeUTF("Could not act upon interpretation. Operation id is invalid.");
-                    }
+                Socket socket = server.accept();
+                threadPool.submit(new Session(socket));
+            }
+        }
+    }
+
+    private static class Session implements Callable<Void> {
+        private final Socket socket;
+
+        Session(Socket socket) {
+            this.socket = socket;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            try (DataInputStream input = new DataInputStream(socket.getInputStream());
+                 DataOutputStream output = new DataOutputStream(socket.getOutputStream()))
+            {
+                String[] command = input.readUTF().split(" ");
+                // Contains the information about how to act upon the command that the user inputted
+                Interpretation interpretation = interpreter.interpret(command);
+                // The id is the operation id. It shows which operation should be executed
+                switch (interpretation.getId()) {
+                    // Get file
+                    case 1:
+                        getFile(interpretation.getData()[0], output);
+                        break;
+                    // Add file
+                    case 2:
+                        addFile(interpretation.getData(), output);
+                        break;
+                    // Delete file
+                    case 3:
+                        deleteFile(interpretation.getData()[0], output);
+                        break;
+                    // Exit system
+                    case 0:
+                        //
+                        //
+                        // Add exit implementation later !!
+                        //
+                        //
+                        System.out.println("Placeholder.");
+                    // User input an incorrect operation
+                    case -1:
+                        output.writeUTF("Invalid command. You must choose the add, get, delete, or exit command.");
+                        break;
+                    // Somehow, the operation id is wrong, probably due to a programming error which I may make in the future
+                    default:
+                        output.writeUTF("Could not act upon interpretation. Operation id is invalid.");
                 }
             }
+            socket.close();
+            return null;
         }
     }
 
@@ -197,7 +215,7 @@ public class Main {
         }
     }
 
-    private static String addFile(String[] data) throws IOException {
+    private static String addFile(String[] data, DataOutputStream clientOutput) throws IOException {
         String clientFilePath = String.format(CLIENT_STORAGE_FOLDER, data[0]);
         // Checks if a name was passed in the data (data[1] is not equal to ""). If not, a name is automatically generated
         String serverFileName = "".equals(data[1]) ? generateFileName(data[2]) : data[1];
@@ -213,10 +231,11 @@ public class Main {
             }
             // Gives a new id to the server filename and returns it in the status code
             idMap.addPair(serverFileName);
-            return "200 " + idMap.getIDByName(serverFileName);
+            clientOutput.writeUTF("200 " + idMap.getIDByName(serverFileName));
         } else {
-            return "403";
+            clientOutput.writeUTF("403");
         }
+        return null;
     }
     /**
      * Gets a file from the storage
@@ -249,7 +268,7 @@ public class Main {
      * @param name the name of the file to be deleted or the id of the file
      * @return the status code of the operation
      */
-    private static String deleteFile(String name) {
+    private static String deleteFile(String name, DataOutputStream clientOutput) throws IOException {
         String filepath;
         // Used for the filepath but also for the deletion of the pair in the idmap
         String filename;
@@ -270,10 +289,11 @@ public class Main {
             } else {
                 idMap.deleteByID(id);
             }
-            return "200";
+            clientOutput.writeUTF("200");
         } else {
-            return "404";
+            clientOutput.writeUTF("404");
         }
+        return null;
     }
 
     /**
