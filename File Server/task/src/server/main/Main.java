@@ -1,11 +1,11 @@
 package server.main;
 
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static config.Config.CLIENT_STORAGE_FOLDER;
 import static config.Config.SERVER_STORAGE_FOLDER;
@@ -13,7 +13,8 @@ import static config.Config.SERVER_STORAGE_FOLDER;
 public class Main {
     private static final CommandInterpreter interpreter = new CommandInterpreter();
     // Contains the id to filename pairs. Keeps track of which files on the server belong to which id
-    private static IDMap idMap = new IDMap();
+    private static final IDMap idMap = new IDMap();
+    private static final ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     public static void main(String[] args) throws IOException, InterruptedException {
         // The entire runtime of the server
@@ -37,20 +38,22 @@ public class Main {
                     String[] command = input.readUTF().split(" ");
                     // Contains the information about how to act upon the command that the user inputted
                     Interpretation interpretation = interpreter.interpret(command);
-                    String statusCode = null;
                     // The id is the operation id. It shows which operation should be executed
                     switch (interpretation.getId()) {
                         // Get file
                         case 1:
-                            statusCode = getFile(interpretation.getData()[0], output);
+                            threadPool.submit(new getFile(interpretation.getData()[0], output));
+                            // getFile(interpretation.getData()[0], output);
                             break;
                         // Add file
                         case 2:
-                            statusCode = addFile(interpretation.getData());
+                            threadPool.submit(new addFile(interpretation.getData(), output));
+                            // statusCode = addFile(interpretation.getData());
                             break;
                         // Delete file
                         case 3:
-                            statusCode = deleteFile(interpretation.getData()[0]);
+                            threadPool.submit(new deleteFile(interpretation.getData()[0], output));
+                            // statusCode = deleteFile(interpretation.getData()[0]);
                             break;
                         // Exit system
                         case 0:
@@ -63,23 +66,141 @@ public class Main {
                         default:
                             output.writeUTF("Could not act upon interpretation. Operation id is invalid.");
                     }
-                    if (statusCode != null) {
-                        output.writeUTF(statusCode);
-                    }
                 }
             }
         }
     }
 
     /**
-     * Adds a file to the storage
-     * @param data the data of the interpretation. For this method, data[0] is the locally saved file, data[1] is the name which will go on the server, and data[2] is the file format
-     * @return the status code of the operation
+     * A callable which adds a file to the server storage.
      */
+    private static class addFile implements Callable<Void> {
+        private final String[] data;
+        private final DataOutputStream clientOutput;
+
+        addFile(String[] data, DataOutputStream clientOutput) {
+            this.data = data;
+            this.clientOutput = clientOutput;
+        }
+
+        /**
+         * The method which adds a file to the storage.
+         * @return the status code of the operation
+         */
+        @Override
+        public Void call() throws IOException {
+            String clientFilePath = String.format(CLIENT_STORAGE_FOLDER, data[0]);
+            // Checks if a name was passed in the data (data[1] is not equal to ""). If not, a name is automatically generated
+            String serverFileName = "".equals(data[1]) ? generateFileName(data[2]) : data[1];
+            String serverFilePath = String.format(SERVER_STORAGE_FOLDER, serverFileName);
+            File clientFile = new File(clientFilePath);
+            File serverFile = new File(serverFilePath);
+            if (serverFile.createNewFile()) {
+                // Reads from the file, stores the data in a buffer, then writes to the server file location using the data from the buffer. Input stream -> Buffer -> Output stream
+                try (InputStream input = new FileInputStream(clientFile);
+                     BufferedInputStream buffer = new BufferedInputStream(input);
+                     OutputStream output = new FileOutputStream(serverFile)) {
+                    output.write(buffer.readAllBytes());
+                }
+                // Gives a new id to the server filename and returns it in the status code
+                idMap.addPair(serverFileName);
+                clientOutput.writeBytes("200 " + idMap.getIDByName(serverFileName));
+            } else {
+                clientOutput.writeBytes("403");
+            }
+            return null;
+        }
+    }
+
+    /**
+     * A callable which gets a file from the server storage.
+     */
+    private static class getFile implements Callable<Void> {
+        private final String identifier;
+        private final DataOutputStream clientOutput;
+        getFile(String identifier, DataOutputStream clientOutput) {
+            this.identifier = identifier;
+            this.clientOutput = clientOutput;
+        }
+
+        /**
+         * The method which gets a file to the storage.
+         */
+        @Override
+        public Void call() throws IOException {
+            String serverFilePath;
+            // If the identifier is an integer id
+            if (identifier.matches("[0-9]+")) {
+                String filename = idMap.getByID(Integer.parseInt(identifier));
+                serverFilePath = String.format(SERVER_STORAGE_FOLDER, filename);
+            } else {
+                serverFilePath = String.format(SERVER_STORAGE_FOLDER, identifier);
+            }
+            File serverFile = new File(serverFilePath);
+            if (serverFile.exists()) {
+                try (InputStream input = new FileInputStream(serverFile);
+                     InputStream buffer = new BufferedInputStream(input)) {
+                    clientOutput.writeUTF("200");
+                    clientOutput.writeInt(buffer.available());
+                    clientOutput.write(buffer.readAllBytes());
+                }
+            } else {
+                clientOutput.writeUTF("404");
+            }
+            return null;
+        }
+
+    }
+
+    /**
+     * A callable which deletes a file from the server storage.
+     */
+    private static class deleteFile implements Callable<Void> {
+        private final String name;
+        private final DataOutputStream clientOutput;
+
+        deleteFile(String identifier, DataOutputStream clientOutput) {
+            this.name = identifier;
+            this.clientOutput = clientOutput;
+        }
+        /**
+         * The method which deletes a file from the storage.
+         *  @return the status code of the operation
+         */
+        @Override
+        public Void call() throws IOException {
+            String filepath;
+            // Used for the filepath but also for the deletion of the pair in the idmap
+            String filename;
+            // ID is set to -1 because, if it doesn't change, then the pair in the idmap is deleted by name, and if it does change, it's deleted by id
+            int id = -1;
+            if (name.matches("[0-9]+")) {
+                filename = idMap.getByID(Integer.parseInt(name));
+                id = Integer.parseInt(name);
+                filepath = String.format(SERVER_STORAGE_FOLDER, filename);
+            } else {
+                filename = name;
+                filepath = String.format(SERVER_STORAGE_FOLDER, name);
+            }
+            File file = new File(filepath);
+            if (file.delete()) {
+                if (id == -1) {
+                    idMap.deleteByName(filename);
+                } else {
+                    idMap.deleteByID(id);
+                }
+                clientOutput.writeUTF("200");
+            } else {
+                clientOutput.writeUTF("404");
+            }
+            return null;
+        }
+    }
+
     private static String addFile(String[] data) throws IOException {
+        String clientFilePath = String.format(CLIENT_STORAGE_FOLDER, data[0]);
         // Checks if a name was passed in the data (data[1] is not equal to ""). If not, a name is automatically generated
         String serverFileName = "".equals(data[1]) ? generateFileName(data[2]) : data[1];
-        String clientFilePath = String.format(CLIENT_STORAGE_FOLDER, data[0]);
         String serverFilePath = String.format(SERVER_STORAGE_FOLDER, serverFileName);
         File clientFile = new File(clientFilePath);
         File serverFile = new File(serverFilePath);
@@ -97,13 +218,11 @@ public class Main {
             return "403";
         }
     }
-
-   /**
+    /**
      * Gets a file from the storage
      * @param identifier the name of the file to be retrieved
-     * @return the status code of the operation + the content read from the file if the code is 200
      */
-   private static String getFile(String identifier, DataOutputStream clientOutput) throws IOException {
+    private static void getFile(String identifier, DataOutputStream clientOutput) throws IOException {
         String serverFilePath;
         // If the identifier is an integer id
         if (identifier.matches("[0-9]+")) {
@@ -115,13 +234,13 @@ public class Main {
         File serverFile = new File(serverFilePath);
         if (serverFile.exists()) {
             try (InputStream input = new FileInputStream(serverFile);
-                InputStream buffer = new BufferedInputStream(input)) {
+                 InputStream buffer = new BufferedInputStream(input)) {
+                clientOutput.writeUTF("200");
                 clientOutput.writeInt(buffer.available());
                 clientOutput.write(buffer.readAllBytes());
             }
-            return "200";
         } else {
-            return "404";
+            clientOutput.writeUTF("404");
         }
     }
 

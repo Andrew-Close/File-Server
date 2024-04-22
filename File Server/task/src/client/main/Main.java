@@ -71,13 +71,13 @@ public class Main {
         }
         System.out.println("The request was sent.");
         // Getting the content of the file and status code
-        int length = input.readInt();
-        byte[] content = input.readNBytes(length);
         String statusCode = input.readUTF();
         // Success
         if ("200".equals(statusCode)) {
             // This repositions the scanner to the beginning of the user input or something. Basically, without this line of code, the program sometimes skips the user input for the filename
             // SCANNER.nextLine();
+            int length = input.readInt();
+            byte[] content = input.readNBytes(length);
             System.out.print("The file was downloaded! Specify a name for it: ");
             String filename = SCANNER.nextLine();
             File clientFile = new File(String.format(CLIENT_STORAGE_FOLDER, filename));
@@ -99,8 +99,8 @@ public class Main {
     private static void sendPutRequest(DataInputStream input, DataOutputStream output) throws IOException, InterruptedException {
         // Locally existing file that the user wants to save on the server
         String filenameLocal = USER_INPUT.getFile(false);
-        // The format of the file, including the  period
-        String format = filenameLocal.substring(filenameLocal.lastIndexOf("."));
+        // The format of the file, including the period. If there is no period, then format is set to an empty string
+        String format = filenameLocal.lastIndexOf(".") == -1 ? "" : filenameLocal.substring(filenameLocal.lastIndexOf("."));
         // Name that the file should be called on the server
         System.out.print("Enter name of the file to be saved on server: ");
         String filenameServer = SCANNER.nextLine();
@@ -108,7 +108,8 @@ public class Main {
         output.writeUTF(Actions.PUT + " " + filenameLocal + " " + filenameServer + " " + format);
         System.out.println("The request was sent.");
         // Checking the status code and printing the respective message
-        String statusCode = input.readUTF();
+        String statusCode = new String(input.readAllBytes());
+        System.out.println(statusCode);
         // Success, checking only the first three digits of the status (the actual status code)
         if ("200".equals(statusCode.substring(0, 3))) {
             // substring(4) is the id
