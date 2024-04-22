@@ -14,7 +14,7 @@ public class Main {
     private static final CommandInterpreter interpreter = new CommandInterpreter();
     // Contains the id to filename pairs. Keeps track of which files on the server belong to which id
     private static final IDMap idMap = new IDMap();
-    private static final ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private static final ExecutorService requestThreadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     public static void main(String[] args) throws IOException, InterruptedException {
         // The entire runtime of the server
@@ -42,17 +42,17 @@ public class Main {
                     switch (interpretation.getId()) {
                         // Get file
                         case 1:
-                            threadPool.submit(new getFile(interpretation.getData()[0], output));
+                            requestThreadPool.submit(new getFile(interpretation.getData()[0], output));
                             // getFile(interpretation.getData()[0], output);
                             break;
                         // Add file
                         case 2:
-                            threadPool.submit(new addFile(interpretation.getData(), output));
+                            requestThreadPool.submit(new addFile(interpretation.getData(), output));
                             // statusCode = addFile(interpretation.getData());
                             break;
                         // Delete file
                         case 3:
-                            threadPool.submit(new deleteFile(interpretation.getData()[0], output));
+                            requestThreadPool.submit(new deleteFile(interpretation.getData()[0], output));
                             // statusCode = deleteFile(interpretation.getData()[0]);
                             break;
                         // Exit system
