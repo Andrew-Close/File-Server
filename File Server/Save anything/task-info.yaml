@@ -762,9 +762,6 @@ files:
   - name: src/client/main/SpecificUserInput.java
     visible: true
     learner_created: true
-  - name: src/server/data/no_name_id_1.txt
-    visible: true
-    learner_created: true
   - name: src/client/data/getid0.txt
     visible: true
     learner_created: true
@@ -772,33 +769,12 @@ files:
     visible: true
     is_binary: true
     learner_created: true
-  - name: src/server/data/no_name_id_0.txt
-    visible: true
-    learner_created: true
-  - name: src/server/data/no_name_id_3.txt
-    visible: true
-    learner_created: true
-  - name: src/server/data/no_name_id_2.jpg
-    visible: true
-    is_binary: true
-    learner_created: true
 feedback_link: https://hyperskill.org/learn/step/5428#comment
 status: Failed
 feedback:
   message: |-
-    Wrong answer in test #3
+    Exception in test #3
 
-    After saving a file on the server you should print:
-    Response says that file is saved! ID = **, where ** is an id of the file!
-
-    Please find below the output of your program during this failed test.
-    Note that the &#39;&gt;&#39; character indicates the beginning of the input line.
-
-    ---
-
-    Server started!
-    Enter action (1 - get a file, 2 - create a file, 3 - delete a file): &gt; 2
-    Enter name of the file: &gt; test_purpose_test1.txt
-    That file does not exist. Make sure the file is in the client/data folder and type it again. &gt;
-  time: "Sun, 14 Apr 2024 01:22:13 UTC"
+    java.io.EOFException
+  time: "Tue, 23 Apr 2024 01:07:12 UTC"
 record: 1

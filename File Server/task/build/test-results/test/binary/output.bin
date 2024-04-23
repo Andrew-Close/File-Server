@@ -9,5 +9,6 @@
 Start test 3[0m
 Server started!
 IEnter action (1 - get a file, 2 - create a file, 3 - delete a file): > 2
-1Enter name of the file: > test_purpose_test1.txt
-`That file does not exist. Make sure the file is in the client/data folder and type it again. > 
+)Enter filename: > test_purpose_test1.txt
+1Enter name of the file to be saved on server: > 
+The request was sent.

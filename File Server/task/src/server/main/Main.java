@@ -1,6 +1,5 @@
 package server.main;
 
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -8,10 +7,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static config.Config.CLIENT_STORAGE_FOLDER;
-import static config.Config.SERVER_STORAGE_FOLDER;
+import static config.Config.*;
 
 public class Main {
+    private static ServerSocket server;
     private static final CommandInterpreter interpreter = new CommandInterpreter();
     // Contains the id to filename pairs. Keeps track of which files on the server belong to which id
     private static final IDMap idMap = new IDMap();
@@ -26,15 +25,13 @@ public class Main {
      * The entire runtime of the server where the user continuously inputs commands until they input exit.
      */
     private static void serverRuntime() throws IOException, InterruptedException {
-        try (ServerSocket server = new ServerSocket(23456))
-        {
-            System.out.println("Server started!");
-            serverloop:
-            while (true) {
-                //Thread.sleep(2000L);
-                Socket socket = server.accept();
-                threadPool.submit(new Session(socket));
-            }
+        server = new ServerSocket(PORT);
+        System.out.println("Server started!");
+        serverloop:
+        while (true) {
+            //Thread.sleep(2000L);
+            Socket socket = server.accept();
+            threadPool.submit(new Session(socket));
         }
     }
 
@@ -69,12 +66,10 @@ public class Main {
                         break;
                     // Exit system
                     case 0:
-                        //
-                        //
-                        // Add exit implementation later !!
-                        //
-                        //
-                        System.out.println("Placeholder.");
+                        socket.close();
+                        server.close();
+                        System.exit(0);
+                        break;
                     // User input an incorrect operation
                     case -1:
                         output.writeUTF("Invalid command. You must choose the add, get, delete, or exit command.");
@@ -85,132 +80,6 @@ public class Main {
                 }
             }
             socket.close();
-            return null;
-        }
-    }
-
-    /**
-     * A callable which adds a file to the server storage.
-     */
-    private static class addFile implements Callable<Void> {
-        private final String[] data;
-        private final DataOutputStream clientOutput;
-
-        addFile(String[] data, DataOutputStream clientOutput) {
-            this.data = data;
-            this.clientOutput = clientOutput;
-        }
-
-        /**
-         * The method which adds a file to the storage.
-         * @return the status code of the operation
-         */
-        @Override
-        public Void call() throws IOException {
-            String clientFilePath = String.format(CLIENT_STORAGE_FOLDER, data[0]);
-            // Checks if a name was passed in the data (data[1] is not equal to ""). If not, a name is automatically generated
-            String serverFileName = "".equals(data[1]) ? generateFileName(data[2]) : data[1];
-            String serverFilePath = String.format(SERVER_STORAGE_FOLDER, serverFileName);
-            File clientFile = new File(clientFilePath);
-            File serverFile = new File(serverFilePath);
-            if (serverFile.createNewFile()) {
-                // Reads from the file, stores the data in a buffer, then writes to the server file location using the data from the buffer. Input stream -> Buffer -> Output stream
-                try (InputStream input = new FileInputStream(clientFile);
-                     BufferedInputStream buffer = new BufferedInputStream(input);
-                     OutputStream output = new FileOutputStream(serverFile)) {
-                    output.write(buffer.readAllBytes());
-                }
-                // Gives a new id to the server filename and returns it in the status code
-                idMap.addPair(serverFileName);
-                clientOutput.writeBytes("200 " + idMap.getIDByName(serverFileName));
-            } else {
-                clientOutput.writeBytes("403");
-            }
-            return null;
-        }
-    }
-
-    /**
-     * A callable which gets a file from the server storage.
-     */
-    private static class getFile implements Callable<Void> {
-        private final String identifier;
-        private final DataOutputStream clientOutput;
-        getFile(String identifier, DataOutputStream clientOutput) {
-            this.identifier = identifier;
-            this.clientOutput = clientOutput;
-        }
-
-        /**
-         * The method which gets a file to the storage.
-         */
-        @Override
-        public Void call() throws IOException {
-            String serverFilePath;
-            // If the identifier is an integer id
-            if (identifier.matches("[0-9]+")) {
-                String filename = idMap.getByID(Integer.parseInt(identifier));
-                serverFilePath = String.format(SERVER_STORAGE_FOLDER, filename);
-            } else {
-                serverFilePath = String.format(SERVER_STORAGE_FOLDER, identifier);
-            }
-            File serverFile = new File(serverFilePath);
-            if (serverFile.exists()) {
-                try (InputStream input = new FileInputStream(serverFile);
-                     InputStream buffer = new BufferedInputStream(input)) {
-                    clientOutput.writeUTF("200");
-                    clientOutput.writeInt(buffer.available());
-                    clientOutput.write(buffer.readAllBytes());
-                }
-            } else {
-                clientOutput.writeUTF("404");
-            }
-            return null;
-        }
-
-    }
-
-    /**
-     * A callable which deletes a file from the server storage.
-     */
-    private static class deleteFile implements Callable<Void> {
-        private final String name;
-        private final DataOutputStream clientOutput;
-
-        deleteFile(String identifier, DataOutputStream clientOutput) {
-            this.name = identifier;
-            this.clientOutput = clientOutput;
-        }
-        /**
-         * The method which deletes a file from the storage.
-         *  @return the status code of the operation
-         */
-        @Override
-        public Void call() throws IOException {
-            String filepath;
-            // Used for the filepath but also for the deletion of the pair in the idmap
-            String filename;
-            // ID is set to -1 because, if it doesn't change, then the pair in the idmap is deleted by name, and if it does change, it's deleted by id
-            int id = -1;
-            if (name.matches("[0-9]+")) {
-                filename = idMap.getByID(Integer.parseInt(name));
-                id = Integer.parseInt(name);
-                filepath = String.format(SERVER_STORAGE_FOLDER, filename);
-            } else {
-                filename = name;
-                filepath = String.format(SERVER_STORAGE_FOLDER, name);
-            }
-            File file = new File(filepath);
-            if (file.delete()) {
-                if (id == -1) {
-                    idMap.deleteByName(filename);
-                } else {
-                    idMap.deleteByID(id);
-                }
-                clientOutput.writeUTF("200");
-            } else {
-                clientOutput.writeUTF("404");
-            }
             return null;
         }
     }
