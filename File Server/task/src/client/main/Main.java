@@ -109,7 +109,6 @@ public class Main {
         System.out.println("The request was sent.");
         // Checking the status code and printing the respective message
         String statusCode = input.readUTF();
-        System.out.println(statusCode);
         // Success, checking only the first three digits of the status (the actual status code)
         if ("200".equals(statusCode.substring(0, 3))) {
             // substring(4) is the id

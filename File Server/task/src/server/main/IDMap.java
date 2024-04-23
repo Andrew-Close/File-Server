@@ -1,13 +1,19 @@
 package server.main;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+
+import static config.Config.IDMAP_FILEPATH;
+import static config.Config.SERVER_STORAGE_FOLDER;
 
 /**
  * Class which contains a hashmap containing all the id to filename pairs. Also contains methods for adding, getting, and deleting pairs.
  */
-public class IDMap {
-    HashMap<Integer, String> idMap;
+public class IDMap implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+    volatile HashMap<Integer, String> idMap;
 
     IDMap() {
         this.idMap = new HashMap<>();
@@ -17,16 +23,8 @@ public class IDMap {
      * Adds a new id to filename pair in the map. The id is automatically generated.
      * @param filename the filename which is being saved on the server and should also be saved on the map.
      */
-    void addPair(String filename) {
+    synchronized void addPair(String filename) {
         idMap.putIfAbsent(getLeastAvailableID(), filename);
-        //
-        //
-        //
-        // For debugging, REMOVE WHEN DONE
-        // |
-        // |
-        // V
-        System.out.println(idMap);
     }
 
     /**
@@ -56,7 +54,7 @@ public class IDMap {
      * Deletes an id to filename pair using the id of the pair.
      * @param id the id of the pair which should be deleted
      */
-    void deleteByID(int id) {
+    synchronized void deleteByID(int id) {
         idMap.remove(id);
     }
 
@@ -67,7 +65,9 @@ public class IDMap {
     void deleteByName(String filename) {
         for (Map.Entry<Integer, String> entry : idMap.entrySet()) {
             if (entry.getValue().equals(filename)) {
-                idMap.remove(entry.getKey());
+                synchronized (this) {
+                    idMap.remove(entry.getKey());
+                }
                 break;
             }
         }
@@ -108,6 +108,22 @@ public class IDMap {
             return id;
         } else {
             return -1;
+        }
+    }
+
+    void serialize(IDMap idMap) throws IOException {
+        try (FileOutputStream fileOutput = new FileOutputStream(IDMAP_FILEPATH);
+            BufferedOutputStream buffer = new BufferedOutputStream(fileOutput);
+            ObjectOutputStream objectOutput = new ObjectOutputStream(buffer)) {
+            objectOutput.writeObject(idMap);
+        }
+    }
+
+    static Object deserialize() throws IOException, ClassNotFoundException {
+        try (FileInputStream fileInput = new FileInputStream(IDMAP_FILEPATH);
+            BufferedInputStream buffer = new BufferedInputStream(fileInput);
+            ObjectInputStream objectInput = new ObjectInputStream(buffer)) {
+            return objectInput.readObject();
         }
     }
 }

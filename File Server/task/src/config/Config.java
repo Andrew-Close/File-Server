@@ -27,4 +27,5 @@ public class Config {
     //
     //
     public static final String CLIENT_STORAGE_FOLDER = "File Server\\task\\src\\client\\data\\%s";
+    public static final String IDMAP_FILEPATH = "File Server\\task\\src\\server\\idmap\\saved_idmap.data";
 }

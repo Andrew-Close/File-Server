@@ -13,10 +13,23 @@ public class Main {
     private static ServerSocket server;
     private static final CommandInterpreter interpreter = new CommandInterpreter();
     // Contains the id to filename pairs. Keeps track of which files on the server belong to which id
-    private static final IDMap idMap = new IDMap();
+    private static IDMap idMap;
     private static final ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
+        // Deserialization of idmap
+        File idMapFile = new File(IDMAP_FILEPATH);
+        if (idMapFile.exists()) {
+            idMap = (IDMap) IDMap.deserialize();
+            //
+            //
+            // This might cause testing problems later on, idk. Just keep this in mind if the tests fail
+            //
+            //
+            idMapFile.delete();
+        } else {
+            idMap = new IDMap();
+        }
         // The entire runtime of the server
         serverRuntime();
     }
@@ -27,7 +40,6 @@ public class Main {
     private static void serverRuntime() throws IOException, InterruptedException {
         server = new ServerSocket(PORT);
         System.out.println("Server started!");
-        serverloop:
         while (true) {
             //Thread.sleep(2000L);
             Socket socket = server.accept();
@@ -68,6 +80,7 @@ public class Main {
                     case 0:
                         socket.close();
                         server.close();
+                        idMap.serialize(idMap);
                         System.exit(0);
                         break;
                     // User input an incorrect operation
