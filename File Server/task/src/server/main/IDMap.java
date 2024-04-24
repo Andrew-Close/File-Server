@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static config.Config.IDMAP_FILEPATH;
-import static config.Config.SERVER_STORAGE_FOLDER;
 
 /**
  * Class which contains a hashmap containing all the id to filename pairs. Also contains methods for adding, getting, and deleting pairs.

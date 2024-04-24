@@ -10,10 +10,10 @@ import static config.Config.*;
 public class Main {
     private static final Scanner SCANNER = new Scanner(System.in);
     private static final SpecificUserInput USER_INPUT = new SpecificUserInput();
-    public static void main(String[] args) throws IOException, InterruptedException/*, InterruptedException*/ {
+    public static void main(String[] args) throws IOException {
         //
         //
-        // Use this when running tests. Also uncomment TimeUnit import and the InterruptedException in the throws list
+        // Use this when running tests. Also uncomment TimeUnit import
         // |
         // |
         // V
@@ -55,28 +55,27 @@ public class Main {
      * @param retrievalMode specifies whether to get by id or by name. name is 1, id is 2
      * @throws IOException thrown if the input or output mess up somehow
      */
-    private static void sendGetRequest(DataInputStream input, DataOutputStream output, int retrievalMode) throws IOException, InterruptedException {
+    private static void sendGetRequest(DataInputStream input, DataOutputStream output, int retrievalMode) throws IOException {
+        // Different request depending on retrieval mode
         switch (retrievalMode) {
             case 1:
-                String filename = USER_INPUT.getFile(true);
+                String filename = USER_INPUT.getFile();
                 // The GET request
                 output.writeUTF(Actions.GET + "_BY_NAME" + " " + filename);
                 break;
             case 2:
-                // I can't just use an integer because, for some reason, when I use nextInt, it just skips the user input for the filename later on
                 String id = USER_INPUT.getID();
                 // The GET request
                 output.writeUTF(Actions.GET + "_BY_ID" + " " + id);
                 break;
         }
         System.out.println("The request was sent.");
-        // Getting the content of the file and status code
+        // Getting the status code
         String statusCode = input.readUTF();
         // Success
         if ("200".equals(statusCode)) {
-            // This repositions the scanner to the beginning of the user input or something. Basically, without this line of code, the program sometimes skips the user input for the filename
-            // SCANNER.nextLine();
             int length = input.readInt();
+            // Content of the file
             byte[] content = input.readNBytes(length);
             System.out.print("The file was downloaded! Specify a name for it: ");
             String filename = SCANNER.nextLine();
@@ -86,7 +85,7 @@ public class Main {
             }
         // Failure
         } else if ("404".equals(statusCode)) {
-            System.out.println("The response says that the file was not found!");
+            System.out.println("The response says that this file is not found!");
         }
     }
 
@@ -96,13 +95,13 @@ public class Main {
      * @param output the output stream to which the PUT request is sent
      * @throws IOException thrown if the input or output mess up somehow
      */
-    private static void sendPutRequest(DataInputStream input, DataOutputStream output) throws IOException, InterruptedException {
-        // Locally existing file that the user wants to save on the server
-        String filenameLocal = USER_INPUT.getFile(false);
+    private static void sendPutRequest(DataInputStream input, DataOutputStream output) throws IOException {
+        // File to save on server
+        String filenameLocal = USER_INPUT.getFile();
         // The format of the file, including the period. If there is no period, then format is set to an empty string
         String format = filenameLocal.lastIndexOf(".") == -1 ? "" : filenameLocal.substring(filenameLocal.lastIndexOf("."));
-        // Name that the file should be called on the server
         System.out.print("Enter name of the file to be saved on server: ");
+        // Name the file should be on server
         String filenameServer = SCANNER.nextLine();
         // The PUT request
         output.writeUTF(Actions.PUT + " " + filenameLocal + " " + filenameServer + " " + format);
@@ -129,7 +128,7 @@ public class Main {
     private static void sendDeleteRequest(DataInputStream input, DataOutputStream output, int retrievalMode) throws IOException {
         switch (retrievalMode) {
             case 1:
-                String filename = USER_INPUT.getFile(true);
+                String filename = USER_INPUT.getFile();
                 // The GET request
                 output.writeUTF(Actions.DELETE + "_BY_NAME" + " " + filename);
                 break;

@@ -61,7 +61,7 @@ public class SpecificUserInput {
      * Gets a filename from the user. Doesn't actually check if the file exists, just returns what the user inputs.
      * @return the filename.
      */
-    String getFile(boolean getFromServer) {
+    String getFile() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter filename: ");
         return scanner.nextLine();
