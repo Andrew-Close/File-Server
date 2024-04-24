@@ -7,6 +7,19 @@ import java.util.Scanner;
 import static config.Config.*;
 
 
+/*
+
+
+
+
+This program is broken, but I don't feel like fixing it. I just want to start a new project.
+
+
+
+
+
+ */
+
 public class Main {
     private static final Scanner SCANNER = new Scanner(System.in);
     private static final SpecificUserInput USER_INPUT = new SpecificUserInput();
